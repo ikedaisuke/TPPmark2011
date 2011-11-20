@@ -403,7 +403,7 @@ min-num-stable zero zero (last (suc z)) p q
   with half (suc (z + 0)) ≟ 0
 ... | yes r = helper
   where open ≤-Reasoning
-        helper : suc zero ≤ zero -- unsatisfiable
+        helper : suc zero ≤ zero -- unsat
         helper = begin
           suc zero ≤⟨ half-one-le z ⟩
           half (suc z) 
@@ -414,7 +414,49 @@ min-num-stable zero zero (last (suc z)) p q
           zero
           ∎
 ... | no ¬r = q
-min-num-stable zero (suc n) (last z) p q = {!!}
-min-num-stable (suc m) y (last z) p q = {!!}
-min-num-stable x y (cons n xs) p q = {!!}
-
+min-num-stable zero (suc n) (last zero) p q 
+  with half (suc n) ≟ 0
+... | yes r = s≤s p
+... | no ¬r = z≤n
+min-num-stable zero (suc n) (last (suc z)) p q 
+  with half (suc (z + suc n)) ≟ 0
+... | yes r = helper
+  where open ≤-Reasoning
+        helper : suc zero ≤ zero -- unsat
+        helper = begin
+          suc zero ≤⟨ half-one-le (z + suc n) ⟩
+          half (suc (z + suc n)) 
+            ≤⟨ ≤-refl-≡ (half (suc (z + suc n))) zero r ⟩
+          zero
+          ∎
+... | no ¬r = z≤n
+min-num-stable (suc m) zero (last z) p ()
+min-num-stable (suc m) (suc n) (last zero) () q 
+min-num-stable (suc m) (suc n) (last (suc z)) p q
+  with half (suc (z + suc n)) ≟ suc m | z ≟ m | suc z ≟ suc m
+... | yes r | yes s | yes t = s≤s z≤n
+... | yes r | yes s | no ¬t 
+  = ⊥-elim (¬t (cong suc s))
+... | yes r | no ¬s | yes t = s≤s z≤n
+... | yes r | no ¬s | no ¬t = {!!} -- unsat GAMEOVER
+... | no ¬r | _     | _ = z≤n
+min-num-stable zero zero (cons zero xs) p q = {!!}
+min-num-stable zero zero (cons (suc n) xs) p q = {!!}
+min-num-stable zero (suc n) (cons zero xs) p q = {!!}
+min-num-stable zero (suc n) (cons (suc z) xs) p q = {!!}
+min-num-stable (suc m) zero (cons x xs) p ()
+min-num-stable (suc m) (suc n) (cons zero xs) p q = {!!}
+min-num-stable (suc m) (suc n) (cons (suc z) xs) p q 
+  with half (suc (z + hd xs)) ≟ suc m | z ≟ m | suc z ≟ suc m
+... | yes r | yes s | yes t = {!!}
+... | yes r | yes s | no ¬t 
+  = ⊥-elim (¬t (cong suc s))
+... | yes r | no ¬s | yes t 
+  = ⊥-elim (¬s (cong pred t))
+... | yes r | no ¬s | no ¬t = {!!}
+... | no ¬r | yes s | yes t = {!!}
+... | no ¬r | yes s | no ¬t 
+  = ⊥-elim (¬t (cong suc s))
+... | no ¬r | no ¬s | yes t 
+  = ⊥-elim (¬s (cong pred t))
+... | no ¬r | no ¬s | no ¬t = {!!}
