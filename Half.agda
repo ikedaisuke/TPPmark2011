@@ -3,8 +3,6 @@ module Half where
 -- http://staff.aist.go.jp/reynald.affeldt/tpp2011/garrigue_candy.v
 
 open import Data.Nat
-open import Data.Nat.Properties
-open import Relation.Binary.Core
 open import Relation.Binary.PropositionalEquality
 
 open import MinMaxLe

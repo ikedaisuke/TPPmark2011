@@ -3,7 +3,6 @@ module State where
 -- http://staff.aist.go.jp/reynald.affeldt/tpp2011/garrigue_candy.v
 
 open import Data.Nat
-open import Relation.Binary.Core
 open import Relation.Binary.PropositionalEquality
 open import Relation.Nullary.Core
 
@@ -174,38 +173,10 @@ le-num-length n (cons {len} m xs) with m ≟ n
                     (max (next (suc n) xs)) 
                     (≤-max-next-grows (suc m) (suc n) xs p)
 
-≤-max-elim-left : ∀ x y -> y ≤ x -> x ⊔ y ≤ x
-≤-max-elim-left zero y p = p
-≤-max-elim-left (suc n) zero p = ≤-refl (suc n)
-≤-max-elim-left (suc m) (suc n) p = begin
-  suc (m ⊔ n) ≤⟨ ≤-refl (suc (m ⊔ n)) ⟩
-  suc m ⊔ suc n 
-    ≤⟨ ≤-suc-suc (≤-max-elim-left m n (≤-pred p)) ⟩
-  suc m 
-  ∎
-  where open ≤-Reasoning
-
-≤-max-max-elim-right : ∀ x y z -> z ≤ y -> x ⊔ y ⊔ z ≤ x ⊔ y
-≤-max-max-elim-right zero zero z p = p
-≤-max-max-elim-right zero (suc n) zero p = ≤-refl (suc n)
-≤-max-max-elim-right zero (suc n) (suc z) p 
-  = ≤-suc-suc (≤-max-elim-left n z (≤-pred p))
-≤-max-max-elim-right (suc m) zero zero p 
-  = ≤-refl (suc m)
-≤-max-max-elim-right (suc m) zero (suc z) ()
-≤-max-max-elim-right (suc m) (suc n) zero p 
-  = ≤-refl (suc (m ⊔ n))
-≤-max-max-elim-right (suc m) (suc n) (suc z) p = begin
-  suc (m ⊔ n ⊔ z) 
-    ≤⟨ ≤-suc-suc (≤-max-max-elim-right m n z (≤-pred p)) ⟩
-  suc (m ⊔ n)
-  ∎
-  where open ≤-Reasoning
-
-≤-next-cons : ∀ {len} n xs -> max {len} (next n xs) ≤ n ⊔ max xs
-≤-next-cons zero (last n) 
+≤-next-le-max : ∀ {len} n xs -> max {len} (next n xs) ≤ n ⊔ max xs
+≤-next-le-max zero (last n) 
   = half-exact-le (n + zero) n (≤-plus-comm-left zero n n (≤-refl n))
-≤-next-cons zero (cons n xs) = begin
+≤-next-le-max zero (cons n xs) = begin
   half (n + hd xs) ⊔ max (next zero xs) 
     ≤⟨ ≤-max-act-left (half (n + hd xs)) (n ⊔ hd xs) 
           (max (next zero xs)) (half-max n (hd xs)) ⟩
@@ -214,17 +185,17 @@ le-num-length n (cons {len} m xs) with m ≟ n
         (max (next zero xs)) 
         (≤-max-act-right n (hd xs) (max xs) (le-hd-max xs)) ⟩
   n ⊔ max xs ⊔ max (next zero xs) 
-    ≤⟨ ≤-max-max-elim-right n (max xs) (max (next zero xs)) (≤-next-cons zero xs) ⟩
+    ≤⟨ ≤-max-max-elim-right n (max xs) (max (next zero xs)) (≤-next-le-max zero xs) ⟩
   n ⊔ max xs
   ∎
   where open ≤-Reasoning
-≤-next-cons (suc m) (last n) = begin
+≤-next-le-max (suc m) (last n) = begin
   half (n + suc m) ≤⟨ half-max n (suc m) ⟩
   n ⊔ suc m ≤⟨ ≤-max-comm n (suc m) ⟩
   suc m ⊔ n 
   ∎
   where open ≤-Reasoning
-≤-next-cons (suc m) (cons n xs) = begin
+≤-next-le-max (suc m) (cons n xs) = begin
   half (n + hd xs) ⊔ max (next (suc m) xs) 
     ≤⟨ ≤-max-act-left (half (n + hd xs)) (n ⊔ hd xs) 
         (max (next (suc m) xs)) (half-max n (hd xs)) ⟩
@@ -235,7 +206,7 @@ le-num-length n (cons {len} m xs) with m ≟ n
   n ⊔ max xs ⊔ max (next (suc m) xs) 
     ≤⟨ ≤-max-act-right (n ⊔ max xs) 
         (max (next (suc m) xs)) (suc m ⊔ max xs) 
-        (≤-next-cons (suc m) xs) ⟩
+        (≤-next-le-max (suc m) xs) ⟩
   n ⊔ max xs ⊔ (suc m ⊔ max xs) 
     ≤⟨ ≤-max-assoc-left n (max xs) (suc m ⊔ max xs) ⟩
   n ⊔ (max xs ⊔ (suc m ⊔ max xs)) 
@@ -269,6 +240,58 @@ le-num-length n (cons {len} m xs) with m ≟ n
   ∎
   where open ≤-Reasoning
 
+≤-min-le-next : ∀ {len} n xs -> n ⊓ min {len} xs ≤ min (next n xs)
+≤-min-le-next zero xs = z≤n
+≤-min-le-next (suc n) (last x) = begin
+  suc n ⊓ x ≤⟨ ≤-min-comm (suc n) x ⟩
+  x ⊓ suc n ≤⟨ half-min x (suc n) ⟩
+  half (x + suc n)
+  ∎
+  where open ≤-Reasoning
+≤-min-le-next (suc m) (cons n xs) = begin
+  suc m ⊓ (n ⊓ min xs) 
+    ≤⟨ ≤-min-assoc-right (suc m) n (min xs) ⟩
+  suc m ⊓ n ⊓ min xs 
+    ≤⟨ ≤-min-act-left (suc m ⊓ n) (n ⊓ suc m) (min xs) 
+        (≤-min-comm (suc m) n)  ⟩
+  n ⊓ suc m ⊓ min xs 
+    ≤⟨ ≤-min-assoc-left n (suc m) (min xs) ⟩
+  n ⊓ (suc m ⊓ min xs) 
+    ≤⟨ ≤-min-act-right n (suc m ⊓ min xs) 
+        (suc m ⊓ (min xs ⊓ min xs)) 
+        (≤-min-act-right (suc m) (min xs) (min xs ⊓ min xs) 
+          (≤-min-elim-left (min xs) (min xs) 
+            (≤-refl (min xs))))  ⟩
+  n ⊓ (suc m ⊓ (min xs ⊓ min xs)) 
+    ≤⟨ ≤-min-act-right n (suc m ⊓ (min xs ⊓ min xs)) 
+         (suc m ⊓ min xs ⊓ min xs) 
+         (≤-min-assoc-right (suc m) (min xs) (min xs)) ⟩
+  n ⊓ (suc m ⊓ min xs ⊓ min xs) 
+    ≤⟨ ≤-min-act-right n (suc m ⊓ min xs ⊓ min xs) 
+       (min xs ⊓ suc m ⊓ min xs) 
+       (≤-min-act-left (suc m ⊓ min xs) (min xs ⊓ suc m)
+       (min xs) 
+         (≤-min-comm (suc m) (min xs))) ⟩
+  n ⊓ (min xs ⊓ suc m ⊓ min xs) 
+    ≤⟨ ≤-min-act-right n (min xs ⊓ suc m ⊓ min xs) 
+         (min xs ⊓ (suc m ⊓ min xs)) 
+         (≤-min-assoc-left (min xs) (suc m) (min xs)) ⟩
+  n ⊓ (min xs ⊓ (suc m ⊓ min xs)) 
+    ≤⟨ ≤-min-assoc-right n (min xs) (suc m ⊓ min xs) ⟩
+  n ⊓ min xs ⊓ (suc m ⊓ min xs) 
+    ≤⟨ ≤-min-act-right (n ⊓ min xs) (suc m ⊓ min xs) 
+       (min (next (suc m) xs)) (≤-min-le-next (suc m) xs) ⟩
+  n ⊓ min xs ⊓ min (next (suc m) xs) 
+    ≤⟨ ≤-min-act-left (n ⊓ min xs) (n ⊓ hd xs) 
+        (min (next (suc m) xs)) 
+          (≤-min-act-right n (min xs) (hd xs) (le-min-hd xs)) ⟩
+  n ⊓ hd xs ⊓ min (next (suc m) xs)
+    ≤⟨ ≤-min-act-left (n ⊓ hd xs) (half (n + hd xs)) 
+        (min (next (suc m) xs)) (half-min n (hd xs)) ⟩
+  half (n + hd xs) ⊓ min (next (suc m) xs)
+  ∎
+  where open ≤-Reasoning
+
 -- lemma: max-decr
 max-decr : ∀ {len} s -> max {len} (next-state s) ≤ max s
 max-decr (last n) 
@@ -289,7 +312,7 @@ max-decr (cons n xs) = begin
     ≤⟨ ≤-max-act-right n (max xs ⊔ max (next n xs)) 
         (max xs ⊔ (n ⊔ max xs)) 
         (≤-max-act-right (max xs) (max (next n xs)) 
-          (n ⊔ max xs) (≤-next-cons n xs)) ⟩
+          (n ⊔ max xs) (≤-next-le-max n xs)) ⟩
   n ⊔ (max xs ⊔ (n ⊔ max xs)) 
     ≤⟨ ≤-max-act-right n (max xs ⊔ (n ⊔ max xs)) 
         (max xs ⊔ n ⊔ max xs) 
@@ -315,5 +338,57 @@ max-decr (cons n xs) = begin
     ≤⟨ ≤-max-act-left (n ⊔ n) n (max xs) 
         (≤-max-max-elim-right zero n n (≤-refl n)) ⟩
   n ⊔ max xs
+  ∎
+  where open ≤-Reasoning
+
+-- lemma: min-incr
+min-incr : ∀ {len} s -> min {len} s ≤ min (next-state s)
+min-incr (last n) 
+  = ≤-refl-≡ n (half (n + n)) (sym (half-double n))
+min-incr (cons n xs) = begin
+  n ⊓ min xs 
+    ≤⟨ ≤-min-act-left n (n ⊓ n) (min xs) 
+       (≤-min-elim-left n n (≤-refl n)) ⟩
+  n ⊓ n ⊓ min xs 
+    ≤⟨ ≤-min-assoc-left n n (min xs) ⟩ 
+  n ⊓ (n ⊓ min xs) 
+    ≤⟨ ≤-min-act-right n (n ⊓ min xs) 
+        (n ⊓ (min xs ⊓ min xs)) 
+        (≤-min-act-right n (min xs) (min xs ⊓ min xs) 
+        (≤-min-elim-left (min xs) (min xs) 
+        (≤-refl (min xs)))) ⟩ 
+  n ⊓ (n ⊓ (min xs ⊓ min xs)) 
+    ≤⟨ ≤-min-act-right n (n ⊓ (min xs ⊓ min xs)) 
+        (n ⊓ min xs ⊓ min xs) 
+        (≤-min-assoc-right n (min xs) (min xs)) ⟩ 
+  n ⊓ (n ⊓ min xs ⊓ min xs) 
+    ≤⟨ ≤-min-act-right n (n ⊓ min xs ⊓ min xs) 
+        (min xs ⊓ n ⊓ min xs) 
+        (≤-min-act-left (n ⊓ min xs) (min xs ⊓ n) 
+          (min xs) (≤-min-comm n (min xs))) ⟩ 
+  n ⊓ (min xs ⊓ n ⊓ min xs) 
+    ≤⟨ ≤-min-act-right n (min xs ⊓ n ⊓ min xs) 
+        (min xs ⊓ (n ⊓ min xs))
+        (≤-min-assoc-left (min xs) n (min xs)) ⟩ 
+  n ⊓ (min xs ⊓ (n ⊓ min xs)) 
+    ≤⟨ ≤-min-act-right n (min xs ⊓ (n ⊓ min xs)) 
+        (min xs ⊓ min (next n xs)) 
+        (≤-min-act-right (min xs) (n ⊓ min xs) 
+        (min (next n xs)) 
+        ( ≤-min-le-next n xs)) ⟩ 
+  n ⊓ (min xs ⊓ min (next n xs)) 
+    ≤⟨ ≤-min-assoc-right n (min xs) (min (next n xs)) ⟩
+  n ⊓ min xs ⊓ min (next n xs) 
+    ≤⟨ ≤-min-act-left (n ⊓ min xs) 
+        (half (n + min xs)) 
+        (min (next n xs)) 
+        (half-min n (min xs)) ⟩
+  half (n + min xs) ⊓ min (next n xs) 
+    ≤⟨ ≤-min-act-left (half (n + min xs)) 
+        (half (n + hd xs)) (min (next n xs)) 
+        (half-grows (n + min xs) (n + hd xs) 
+        (≤-plus-act-right n (min xs) (hd xs) 
+          (le-min-hd xs))) ⟩
+  half (n + hd xs) ⊓ min (next n xs)
   ∎
   where open ≤-Reasoning

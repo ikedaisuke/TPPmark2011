@@ -99,6 +99,25 @@ open import Relation.Binary.PropositionalEquality
   ∎
   where open ≤-Reasoning
 
+≤-min-act-left : ∀ x y z -> x ≤ y -> x ⊓ z ≤ y ⊓ z
+≤-min-act-left zero zero z p = p
+≤-min-act-left zero (suc n) z p = z≤n
+≤-min-act-left (suc m) zero z ()
+≤-min-act-left (suc m) (suc n) zero p = z≤n
+≤-min-act-left (suc m) (suc n) (suc z) p = begin
+  suc (m ⊓ z) 
+    ≤⟨ ≤-suc-suc (≤-min-act-left m n z (≤-pred p)) ⟩
+  suc (n ⊓ z)
+  ∎
+  where open ≤-Reasoning
+
+≤-min-act-right : ∀ x y z -> y ≤ z -> x ⊓ y ≤ x ⊓ z
+≤-min-act-right zero y z p = z≤n
+≤-min-act-right (suc m) zero z p = z≤n
+≤-min-act-right (suc m) (suc n) zero ()
+≤-min-act-right (suc m) (suc n) (suc z) p 
+  = ≤-suc-suc (≤-min-act-right m n z (≤-pred p))
+
 ≡-plus-zero-right : ∀ x -> x + zero ≡ x
 ≡-plus-zero-right 
   = proj₂ (CommutativeSemiring.+-identity commutativeSemiring)
@@ -161,3 +180,62 @@ open import Relation.Binary.PropositionalEquality
   suc (m ⊔ n ⊔ z)
   ∎
   where open ≤-Reasoning
+
+≤-min-assoc-right : ∀ x y z -> x ⊓ (y ⊓ z) ≤ (x ⊓ y) ⊓ z
+≤-min-assoc-right zero y z = z≤n
+≤-min-assoc-right (suc m) zero z = z≤n
+≤-min-assoc-right (suc m) (suc n) zero = z≤n
+≤-min-assoc-right (suc m) (suc n) (suc z) = begin
+  suc (m ⊓ (n ⊓ z)) ≤⟨ ≤-suc-suc (≤-min-assoc-right m n z) ⟩
+  suc (m ⊓ n ⊓ z)
+  ∎
+  where open ≤-Reasoning
+
+≤-min-assoc-left : ∀ x y z -> (x ⊓ y) ⊓ z ≤ x ⊓ (y ⊓ z)
+≤-min-assoc-left zero y z = z≤n
+≤-min-assoc-left (suc m) zero z = z≤n
+≤-min-assoc-left (suc m) (suc n) zero = z≤n
+≤-min-assoc-left (suc m) (suc n) (suc z) 
+  = ≤-suc-suc (≤-min-assoc-left m n z)
+
+≤-max-elim-left : ∀ x y -> y ≤ x -> x ⊔ y ≤ x
+≤-max-elim-left zero y p = p
+≤-max-elim-left (suc n) zero p = ≤-refl (suc n)
+≤-max-elim-left (suc m) (suc n) p = begin
+  suc (m ⊔ n) ≤⟨ ≤-refl (suc (m ⊔ n)) ⟩
+  suc m ⊔ suc n 
+    ≤⟨ ≤-suc-suc (≤-max-elim-left m n (≤-pred p)) ⟩
+  suc m 
+  ∎
+  where open ≤-Reasoning
+
+≤-min-elim-left : ∀ x y -> x ≤ y -> x ≤ x ⊓ y
+≤-min-elim-left zero y p = z≤n
+≤-min-elim-left (suc m) zero ()
+≤-min-elim-left (suc m) (suc n) p 
+  = ≤-suc-suc (≤-min-elim-left m n (≤-pred p))
+
+≤-max-max-elim-right : ∀ x y z -> z ≤ y -> x ⊔ y ⊔ z ≤ x ⊔ y
+≤-max-max-elim-right zero zero z p = p
+≤-max-max-elim-right zero (suc n) zero p = ≤-refl (suc n)
+≤-max-max-elim-right zero (suc n) (suc z) p 
+  = ≤-suc-suc (≤-max-elim-left n z (≤-pred p))
+≤-max-max-elim-right (suc m) zero zero p 
+  = ≤-refl (suc m)
+≤-max-max-elim-right (suc m) zero (suc z) ()
+≤-max-max-elim-right (suc m) (suc n) zero p 
+  = ≤-refl (suc (m ⊔ n))
+≤-max-max-elim-right (suc m) (suc n) (suc z) p = begin
+  suc (m ⊔ n ⊔ z) 
+    ≤⟨ ≤-suc-suc (≤-max-max-elim-right m n z (≤-pred p)) ⟩
+  suc (m ⊔ n)
+  ∎
+  where open ≤-Reasoning
+
+≤-min-min-elim-right : ∀ x y z -> y ≤ z -> x ⊓ y ⊓ z ≤ x ⊓ y
+≤-min-min-elim-right zero y z p = z≤n
+≤-min-min-elim-right (suc m) zero z p = z≤n
+≤-min-min-elim-right (suc m) (suc n) zero ()
+≤-min-min-elim-right (suc m) (suc n) (suc z) p 
+  = ≤-suc-suc (≤-min-min-elim-right m n z (≤-pred p))
+
