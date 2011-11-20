@@ -1,0 +1,8 @@
+README
+======
+
+A proof of the TPPmark problem in Agda2, which is a translation in Coq.
+The original proof in Coq is written by Jacques Garrigue.
+
+http://staff.aist.go.jp/reynald.affeldt/tpp2011/ucd.html
+http://staff.aist.go.jp/reynald.affeldt/tpp2011/garrigue_candy.v
