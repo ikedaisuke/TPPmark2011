@@ -268,3 +268,8 @@ half-loop (suc (suc m)) (suc (suc n)) p q
           half (m + n) ≤⟨ ≤-pred (≤-pred lemma2) ⟩
           m
           ∎
+
+half-one-le : ∀ n -> suc zero ≤ half (suc n)
+half-one-le zero = s≤s z≤n
+half-one-le (suc zero) = half-one-le zero
+half-one-le (suc (suc n)) = s≤s z≤n

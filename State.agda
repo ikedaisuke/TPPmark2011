@@ -2,6 +2,7 @@ module State where
 
 -- http://staff.aist.go.jp/reynald.affeldt/tpp2011/garrigue_candy.v
 
+open import Data.Empty
 open import Data.Nat
 open import Relation.Binary.PropositionalEquality
 open import Relation.Nullary.Core
@@ -392,3 +393,28 @@ min-incr (cons n xs) = begin
   half (n + hd xs) ⊓ min (next n xs)
   ∎
   where open ≤-Reasoning
+
+-- use half-loop, half-grows
+-- lemma: min-num-stable
+min-num-stable : ∀ {len} x y s ->
+  x ≤ min {len} s -> x ≤ y -> num x (next y s) ≤ num x s
+min-num-stable zero zero (last zero) p q = s≤s q
+min-num-stable zero zero (last (suc z)) p q 
+  with half (suc (z + 0)) ≟ 0
+... | yes r = helper
+  where open ≤-Reasoning
+        helper : suc zero ≤ zero -- unsatisfiable
+        helper = begin
+          suc zero ≤⟨ half-one-le z ⟩
+          half (suc z) 
+            ≤⟨ ≤-half-≡ (suc z) (suc (z + zero)) 
+                (sym (≡-plus-zero-right (suc z))) ⟩
+          half (suc (z + zero)) 
+            ≤⟨ ≤-refl-≡ (half (suc (z + zero))) zero r ⟩
+          zero
+          ∎
+... | no ¬r = q
+min-num-stable zero (suc n) (last z) p q = {!!}
+min-num-stable (suc m) y (last z) p q = {!!}
+min-num-stable x y (cons n xs) p q = {!!}
+
